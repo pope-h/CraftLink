@@ -113,3 +113,22 @@ and any more or less data. The frontend would send this information to IPFS or a
    - Display reviews and average ratings on artisan profiles
 
 ### NOTE this is just a suggestion and not a mandation. The Frontend is free to implement the flow how it suits best.
+
+## DEPLOYMENT
+- Registry deployed at: 0x5a3C6288A295E0CE7ef6cD73fAE56e1DaD934938
+https://sepolia.basescan.org/address/0x5a3c6288a295e0ce7ef6cd73fae56e1dad934938
+
+- CraftLinkToken deployed at: 0xCaeC3B55dF16ec145B9e262a3Bd2A225b081630F
+https://sepolia.basescan.org/address/0xCaeC3B55dF16ec145B9e262a3Bd2A225b081630F
+
+- PaymentProcessor deployed at: 0x07be041AB8641e624944a1c0A4c00A8Cd8aEb7D4
+https://sepolia.basescan.org/address/0x07be041AB8641e624944a1c0A4c00A8Cd8aEb7D4
+
+- GigMarketplace deployed at: 0x0dFC9bCA80DA4B46DD3e8c26120975A94F97be3b
+https://sepolia.basescan.org/address/0x0dFC9bCA80DA4B46DD3e8c26120975A94F97be3b
+
+- ReviewSystem deployed at: 0xa2BC0C9A4cAf2Aa2AFB87836881Ec308CE43E711
+https://sepolia.basescan.org/address/0xa2BC0C9A4cAf2Aa2AFB87836881Ec308CE43E711
+
+- ChatSystem deployed at: 0x0654eDAbC62bE2043aF22d72F4f617c6978C9BAb
+https://sepolia.basescan.org/address/0x0654eDAbC62bE2043aF22d72F4f617c6978C9BAb
