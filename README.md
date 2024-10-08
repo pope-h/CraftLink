@@ -132,3 +132,5 @@ https://sepolia.basescan.org/address/0xa2BC0C9A4cAf2Aa2AFB87836881Ec308CE43E711
 
 - ChatSystem deployed at: 0x0654eDAbC62bE2043aF22d72F4f617c6978C9BAb
 https://sepolia.basescan.org/address/0x0654eDAbC62bE2043aF22d72F4f617c6978C9BAb
+
+removed `forge-std/=lib/forge-std/src/` from the remappings.txt to avoid error.
