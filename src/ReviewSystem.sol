@@ -28,9 +28,10 @@ contract ReviewSystem {
 
     function submitReview(uint256 _gigId, uint256 _rating, string memory _comment) external {
         require(_rating >= 1 && _rating <= 5, "Rating must be between 1 and 5");
-        
-        (address client, , , , , , , address hiredArtisan, , bool isCompleted, bool isClosed) = gigMarketplace.getGigDetails(_gigId);
-        
+
+        (address client,,,,,,, address hiredArtisan,, bool isCompleted, bool isClosed) =
+            gigMarketplace.getGigDetails(_gigId);
+
         require(msg.sender == client, "Only the client can submit a review");
         require(isCompleted, "Gig must be completed before submitting a review");
         require(!isClosed, "Cannot review a closed gig");

@@ -146,7 +146,10 @@ contract GigMarketplace {
     function closeGig(uint256 _gigId) external {
         require(_gigId < gigCounter, "Invalid gig ID");
         require(msg.sender == gigs[_gigId].client, "Only gig owner can close the gig");
-        require(gigs[_gigId].hiredArtisan == address(0) || block.timestamp > gigs[_gigId].endTime, "Cannot close an active gig before its end time");
+        require(
+            gigs[_gigId].hiredArtisan == address(0) || block.timestamp > gigs[_gigId].endTime,
+            "Cannot close an active gig before its end time"
+        );
         require(!gigs[_gigId].isCompleted, "Completed gigs cannot be closed");
         require(!gigs[_gigId].isClosed, "Gig is already closed");
 
@@ -157,19 +160,23 @@ contract GigMarketplace {
         emit GigClosed(_gigId);
     }
 
-    function getGigDetails(uint256 _gigId) external view returns (
-        address client,
-        string memory title,
-        string memory description,
-        uint256 budget,
-        uint256 duration,
-        uint256 startTime,
-        address[] memory applicants,
-        address hiredArtisan,
-        uint256 paymentId,
-        bool isCompleted,
-        bool isClosed
-    ) {
+    function getGigDetails(uint256 _gigId)
+        external
+        view
+        returns (
+            address client,
+            string memory title,
+            string memory description,
+            uint256 budget,
+            uint256 duration,
+            uint256 startTime,
+            address[] memory applicants,
+            address hiredArtisan,
+            uint256 paymentId,
+            bool isCompleted,
+            bool isClosed
+        )
+    {
         require(_gigId < gigCounter, "Invalid gig ID");
         Gig storage gig = gigs[_gigId];
         return (

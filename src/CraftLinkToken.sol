@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract CraftLinkToken is ERC20, Ownable {
-    uint256 public constant CLAIM_AMOUNT = 1000 * 10**18;
+    uint256 public constant CLAIM_AMOUNT = 1000 * 10 ** 18;
     mapping(address => bool) public hasClaimed;
 
     constructor() ERC20("CraftLink Token", "CLT") Ownable(msg.sender) {

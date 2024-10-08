@@ -2,7 +2,11 @@
 pragma solidity ^0.8.20;
 
 contract Registry {
-    enum UserType { None, Artisan, Client }
+    enum UserType {
+        None,
+        Artisan,
+        Client
+    }
 
     struct Artisan {
         string ipfsHash;
@@ -17,7 +21,7 @@ contract Registry {
 
     mapping(address => Artisan) public artisans;
     mapping(address => Client) public clients;
-    mapping(address => UserType) public userTypes;  // Store whether a user is an Artisan, Client, or None
+    mapping(address => UserType) public userTypes; // Store whether a user is an Artisan, Client, or None
 
     address[] public artisanAddresses;
     address[] public clientAddresses;
@@ -29,11 +33,7 @@ contract Registry {
     function registerAsArtisan(string memory _ipfsHash) external {
         require(userTypes[msg.sender] == UserType.None, "User already registered");
 
-        artisans[msg.sender] = Artisan({
-            ipfsHash: _ipfsHash,
-            isVerified: false,
-            registrationDate: block.timestamp
-        });
+        artisans[msg.sender] = Artisan({ipfsHash: _ipfsHash, isVerified: false, registrationDate: block.timestamp});
 
         userTypes[msg.sender] = UserType.Artisan;
         artisanAddresses.push(msg.sender);
@@ -43,10 +43,7 @@ contract Registry {
     function registerAsClient(string memory _ipfsHash) external {
         require(userTypes[msg.sender] == UserType.None, "User already registered");
 
-        clients[msg.sender] = Client({
-            ipfsHash: _ipfsHash,
-            registrationDate: block.timestamp
-        });
+        clients[msg.sender] = Client({ipfsHash: _ipfsHash, registrationDate: block.timestamp});
 
         userTypes[msg.sender] = UserType.Client;
         clientAddresses.push(msg.sender);
@@ -70,34 +67,28 @@ contract Registry {
 
     function isClient(address _clientAddress) external view returns (bool) {
         require(userTypes[_clientAddress] == UserType.Client, "User is not registered as a client");
-        
-         return (clients[_clientAddress].registrationDate != 0);
+
+        return (clients[_clientAddress].registrationDate != 0);
     }
 
-    function getArtisanDetails(address _artisanAddress) external view returns (
-        string memory ipfsHash,
-        bool isVerified,
-        uint256 registrationDate
-    ) {
+    function getArtisanDetails(address _artisanAddress)
+        external
+        view
+        returns (string memory ipfsHash, bool isVerified, uint256 registrationDate)
+    {
         require(userTypes[_artisanAddress] == UserType.Artisan, "User is not registered as an artisan");
         Artisan storage artisan = artisans[_artisanAddress];
-        return (
-            artisan.ipfsHash,
-            artisan.isVerified,
-            artisan.registrationDate
-        );
+        return (artisan.ipfsHash, artisan.isVerified, artisan.registrationDate);
     }
 
-    function getClientDetails(address _clientAddress) external view returns (
-        string memory ipfsHash,
-        uint256 registrationDate
-    ) {
+    function getClientDetails(address _clientAddress)
+        external
+        view
+        returns (string memory ipfsHash, uint256 registrationDate)
+    {
         require(userTypes[_clientAddress] == UserType.Client, "User is not registered as a client");
         Client storage client = clients[_clientAddress];
-        return (
-            client.ipfsHash,
-            client.registrationDate
-        );
+        return (client.ipfsHash, client.registrationDate);
     }
 
     function getArtisanCount() external view returns (uint256) {
