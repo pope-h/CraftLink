@@ -114,7 +114,26 @@ and any more or less data. The frontend would send this information to IPFS or a
 
 ### NOTE this is just a suggestion and not a mandation. The Frontend is free to implement the flow how it suits best.
 
-## DEPLOYMENT
+## LATEST DEPLOYMENT
+- Registry deployed at: 0xa12a383A0fDC53b5010BAC329B8F51575D06fE8c
+https://sepolia.basescan.org/address/0xa12a383A0fDC53b5010BAC329B8F51575D06fE8c
+
+- CraftLinkToken deployed at: 0x0984bf8be54df5Ded9D5052Dc32E3BA7F46f5908
+https://sepolia.basescan.org/address/0x0984bf8be54df5Ded9D5052Dc32E3BA7F46f5908
+
+- PaymentProcessor deployed at: 0x5B1adcbBAa575EB46c03F3379024C954B2F2aa9F
+https://sepolia.basescan.org/address/0x5B1adcbBAa575EB46c03F3379024C954B2F2aa9F
+
+- GigMarketplace deployed at: 0xB0A40A36ae5A49e2ab5e66e7853FcE3fA1422871
+https://sepolia.basescan.org/address/0xB0A40A36ae5A49e2ab5e66e7853FcE3fA1422871
+
+- ReviewSystem deployed at: 0x195722BdbF7781a481A200d341e55743762A3E6d
+https://sepolia.basescan.org/address/0x195722BdbF7781a481A200d341e55743762A3E6d
+
+- ChatSystem deployed at: 0xe891d7287620b355E8601C5960265F97a5363390
+https://sepolia.basescan.org/address/0xe891d7287620b355E8601C5960265F97a5363390
+
+## PREVIOUS DEPLOYMENT
 - Registry deployed at: 0x5a3C6288A295E0CE7ef6cD73fAE56e1DaD934938
 https://sepolia.basescan.org/address/0x5a3c6288a295e0ce7ef6cd73fae56e1dad934938
 

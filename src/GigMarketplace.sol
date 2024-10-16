@@ -15,20 +15,21 @@ contract GigMarketplace {
         string[] requiredSkills;
         uint256 budget;
         uint256 duration;
+        uint256 paymentId;
+        address hiredArtisan;
+        string location;
         uint256 startTime;
         uint256 endTime;
-        address[] applicants;
-        address hiredArtisan;
-        uint256 paymentId;
-        bool artisanCompleteGig;
-        bool isCompleted;
-        bool isClosed;
     }
 
     mapping(uint256 => Gig) public gigs;
+    mapping(uint256 => address[]) public gigApplicants;
+    mapping(uint256 => bool) public artisanCompleteGig;
+    mapping(uint256 => bool) public isGigCompleted;
+    mapping(uint256 => bool) public isGigClosed;
     uint256 public gigCounter;
 
-    event GigCreated(uint256 indexed gigId, address indexed client, string title, uint256 duration);
+    event GigCreated(uint256 indexed gigId, address indexed client, string title, uint256 duration, string location);
     event GigApplicationSubmitted(uint256 indexed gigId, address indexed artisan);
     event ArtisanHired(uint256 indexed gigId, address indexed artisan, uint256 startTime, uint256 endTime);
     event GigDurationExtended(uint256 indexed gigId, uint256 newEndTime);
@@ -46,7 +47,8 @@ contract GigMarketplace {
         string memory _description,
         string[] memory _requiredSkills,
         uint256 _budget,
-        uint256 _duration
+        uint256 _duration,
+        string memory _location
     ) external {
         require(registry.isClient(msg.sender), "Only Clients can create gigs");
 
@@ -61,124 +63,108 @@ contract GigMarketplace {
             requiredSkills: _requiredSkills,
             budget: _budget,
             duration: _duration,
-            startTime: 0,
-            endTime: 0,
-            applicants: new address[](0),
-            hiredArtisan: address(0),
             paymentId: paymentId,
-            artisanCompleteGig: false,
-            isCompleted: false,
-            isClosed: false
+            hiredArtisan: address(0),
+            location: _location,
+            startTime: 0,
+            endTime: 0
         });
 
-        emit GigCreated(newGigId, msg.sender, _title, _duration);
+        emit GigCreated(newGigId, msg.sender, _title, _duration, _location);
     }
 
     function applyForGig(uint256 _gigId) external {
         require(_gigId < gigCounter, "Invalid gig ID");
         require(registry.isArtisanVerified(msg.sender), "Only verified artisans can apply");
-        require(!gigs[_gigId].isClosed, "Gig has been closed");
+        require(!isGigClosed[_gigId], "Gig has been closed");
         require(gigs[_gigId].hiredArtisan == address(0), "Artisan already hired for this gig");
 
-        gigs[_gigId].applicants.push(msg.sender);
+        gigApplicants[_gigId].push(msg.sender);
         emit GigApplicationSubmitted(_gigId, msg.sender);
     }
 
     function hireArtisan(uint256 _gigId, address _artisan) external {
+        Gig storage gig = gigs[_gigId];
         require(_gigId < gigCounter, "Invalid gig ID");
-        require(msg.sender == gigs[_gigId].client, "Only the client can hire an artisan");
-        require(gigs[_gigId].hiredArtisan == address(0), "An artisan has already been hired");
-        require(!gigs[_gigId].isClosed, "Gig has been closed");
+        require(msg.sender == gig.client, "Only the client can hire an artisan");
+        require(gig.hiredArtisan == address(0), "An artisan has already been hired");
+        require(!isGigClosed[_gigId], "Gig has been closed");
+        require(_isApplicant(_gigId, _artisan), "The selected artisan has not applied for this gig");
 
-        bool isApplicant = false;
-        for (uint256 i = 0; i < gigs[_gigId].applicants.length; i++) {
-            if (gigs[_gigId].applicants[i] == _artisan) {
-                isApplicant = true;
-                break;
-            }
-        }
-        require(isApplicant, "The selected artisan has not applied for this gig");
+        gig.hiredArtisan = _artisan;
+        gig.startTime = block.timestamp;
+        gig.endTime = block.timestamp + gig.duration;
 
-        gigs[_gigId].hiredArtisan = _artisan;
-        gigs[_gigId].startTime = block.timestamp;
-        gigs[_gigId].endTime = block.timestamp + gigs[_gigId].duration;
-
-        emit ArtisanHired(_gigId, _artisan, gigs[_gigId].startTime, gigs[_gigId].endTime);
+        emit ArtisanHired(_gigId, _artisan, gig.startTime, gig.endTime);
     }
 
     function extendGigDuration(uint256 _gigId, uint256 _additionalTime) external {
+        Gig storage gig = gigs[_gigId];
         require(_gigId < gigCounter, "Invalid gig ID");
-        require(msg.sender == gigs[_gigId].client, "Only the client can extend the gig duration");
-        require(!gigs[_gigId].isCompleted, "Cannot extend completed gigs");
-        require(!gigs[_gigId].isClosed, "Cannot extend closed gigs");
-        require(gigs[_gigId].hiredArtisan != address(0), "Cannot extend gigs without hired artisans");
-        require(block.timestamp <= gigs[_gigId].endTime, "Cannot extend expired gigs");
+        require(msg.sender == gig.client, "Only the client can extend the gig duration");
+        require(!isGigCompleted[_gigId] && !isGigClosed[_gigId], "Cannot extend completed or closed gigs");
+        require(gig.hiredArtisan != address(0), "Cannot extend gigs without hired artisans");
+        require(block.timestamp <= gig.endTime, "Cannot extend expired gigs");
 
-        gigs[_gigId].endTime += _additionalTime;
-        gigs[_gigId].duration += _additionalTime;
+        gig.endTime += _additionalTime;
+        gig.duration += _additionalTime;
 
-        emit GigDurationExtended(_gigId, gigs[_gigId].endTime);
+        emit GigDurationExtended(_gigId, gig.endTime);
     }
 
     function completeGig(uint256 _gigId) external {
+        Gig storage gig = gigs[_gigId];
         require(_gigId < gigCounter, "Invalid gig ID");
-        require(msg.sender == gigs[_gigId].hiredArtisan, "Only hired Artisan can mark the gig as completed");
-        require(!gigs[_gigId].isCompleted, "Gig is already marked as completed");
-        require(!gigs[_gigId].isClosed, "Gig has been closed");
-        require(block.timestamp <= gigs[_gigId].endTime, "Gig duration has expired");
+        require(msg.sender == gig.hiredArtisan, "Only hired Artisan can mark the gig as completed");
+        require(!isGigCompleted[_gigId] && !isGigClosed[_gigId], "Gig is already completed or closed");
+        require(block.timestamp <= gig.endTime, "Gig duration has expired");
 
-        gigs[_gigId].artisanCompleteGig = true;
+        artisanCompleteGig[_gigId] = true;
         emit GigCompleted(_gigId);
     }
 
     function confirmCompleteGig(uint256 _gigId) external {
+        Gig storage gig = gigs[_gigId];
         require(_gigId < gigCounter, "Invalid gig ID");
-        require(msg.sender == gigs[_gigId].client, "Only gig owner can confirm completion");
-        require(gigs[_gigId].artisanCompleteGig, "This gig has not been completed yet");
-        require(!gigs[_gigId].isCompleted, "Gig is already marked as completed");
-        require(!gigs[_gigId].isClosed, "Gig has been closed");
+        require(msg.sender == gig.client, "Only gig owner can confirm completion");
+        require(artisanCompleteGig[_gigId] && !isGigCompleted[_gigId] && !isGigClosed[_gigId], "Gig cannot be confirmed as completed");
 
-        gigs[_gigId].isCompleted = true;
-        paymentProcessor.releaseArtisanFunds(gigs[_gigId].hiredArtisan, gigs[_gigId].paymentId);
+        isGigCompleted[_gigId] = true;
+        paymentProcessor.releaseArtisanFunds(gig.hiredArtisan, gig.paymentId);
         emit GigCompleted(_gigId);
     }
 
     function closeGig(uint256 _gigId) external {
+        Gig storage gig = gigs[_gigId];
         require(_gigId < gigCounter, "Invalid gig ID");
-        require(msg.sender == gigs[_gigId].client, "Only gig owner can close the gig");
-        require(
-            gigs[_gigId].hiredArtisan == address(0) || block.timestamp > gigs[_gigId].endTime,
-            "Cannot close an active gig before its end time"
-        );
-        require(!gigs[_gigId].isCompleted, "Completed gigs cannot be closed");
-        require(!gigs[_gigId].isClosed, "Gig is already closed");
+        require(msg.sender == gig.client, "Only gig owner can close the gig");
+        require(gig.hiredArtisan == address(0) || block.timestamp > gig.endTime, "Cannot close an active gig before its end time");
+        require(!isGigCompleted[_gigId] && !isGigClosed[_gigId], "Gig is already completed or closed");
 
-        gigs[_gigId].isClosed = true;
-        if (gigs[_gigId].hiredArtisan == address(0)) {
-            paymentProcessor.refundClientFunds(gigs[_gigId].paymentId);
+        isGigClosed[_gigId] = true;
+        if (gig.hiredArtisan == address(0)) {
+            paymentProcessor.refundClientFunds(gig.paymentId);
         }
         emit GigClosed(_gigId);
     }
 
-    function getGigDetails(uint256 _gigId)
-        external
-        view
-        returns (
-            address client,
-            string memory title,
-            string memory description,
-            uint256 budget,
-            uint256 duration,
-            uint256 startTime,
-            address[] memory applicants,
-            address hiredArtisan,
-            uint256 paymentId,
-            bool isCompleted,
-            bool isClosed
-        )
-    {
+    function getGigDetails(uint256 _gigId) external view returns (
+        address client,
+        string memory title,
+        string memory description,
+        uint256 budget,
+        uint256 duration,
+        uint256 startTime,
+        uint256 endTime,
+        address hiredArtisan,
+        uint256 paymentId,
+        bool isCompleted,
+        bool isClosed
+    ) {
         require(_gigId < gigCounter, "Invalid gig ID");
         Gig storage gig = gigs[_gigId];
+        isCompleted = isGigCompleted[_gigId];
+        isClosed = isGigClosed[_gigId];
         return (
             gig.client,
             gig.title,
@@ -186,11 +172,36 @@ contract GigMarketplace {
             gig.budget,
             gig.duration,
             gig.startTime,
-            gig.applicants,
+            gig.endTime,
             gig.hiredArtisan,
             gig.paymentId,
-            gig.isCompleted,
-            gig.isClosed
+            isCompleted,
+            isClosed
         );
+    }
+
+    function getGigTimeline(uint256 _gigId) external view returns (uint256, uint256) {
+        require(_gigId < gigCounter, "Invalid gig ID");
+        return (gigs[_gigId].startTime, gigs[_gigId].endTime);
+    }
+
+    function getGigApplicants(uint256 _gigId) external view returns (address[] memory) {
+        require(_gigId < gigCounter, "Invalid gig ID");
+        return gigApplicants[_gigId];
+    }
+
+    function getGigRequiredSkills(uint256 _gigId) external view returns (string[] memory) {
+        require(_gigId < gigCounter, "Invalid gig ID");
+        return gigs[_gigId].requiredSkills;
+    }
+
+    function _isApplicant(uint256 _gigId, address _artisan) internal view returns (bool) {
+        address[] memory applicants = gigApplicants[_gigId];
+        for (uint256 i = 0; i < applicants.length; i++) {
+            if (applicants[i] == _artisan) {
+                return true;
+            }
+        }
+        return false;
     }
 }
