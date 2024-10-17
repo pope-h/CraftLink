@@ -127,7 +127,10 @@ contract GigMarketplace {
         Gig storage gig = gigs[_gigId];
         require(_gigId < gigCounter, "Invalid gig ID");
         require(msg.sender == gig.client, "Only gig owner can confirm completion");
-        require(artisanCompleteGig[_gigId] && !isGigCompleted[_gigId] && !isGigClosed[_gigId], "Gig cannot be confirmed as completed");
+        require(
+            artisanCompleteGig[_gigId] && !isGigCompleted[_gigId] && !isGigClosed[_gigId],
+            "Gig cannot be confirmed as completed"
+        );
 
         isGigCompleted[_gigId] = true;
         paymentProcessor.releaseArtisanFunds(gig.hiredArtisan, gig.paymentId);
@@ -138,7 +141,10 @@ contract GigMarketplace {
         Gig storage gig = gigs[_gigId];
         require(_gigId < gigCounter, "Invalid gig ID");
         require(msg.sender == gig.client, "Only gig owner can close the gig");
-        require(gig.hiredArtisan == address(0) || block.timestamp > gig.endTime, "Cannot close an active gig before its end time");
+        require(
+            gig.hiredArtisan == address(0) || block.timestamp > gig.endTime,
+            "Cannot close an active gig before its end time"
+        );
         require(!isGigCompleted[_gigId] && !isGigClosed[_gigId], "Gig is already completed or closed");
 
         isGigClosed[_gigId] = true;
@@ -148,19 +154,23 @@ contract GigMarketplace {
         emit GigClosed(_gigId);
     }
 
-    function getGigDetails(uint256 _gigId) external view returns (
-        address client,
-        string memory title,
-        string memory description,
-        uint256 budget,
-        uint256 duration,
-        uint256 startTime,
-        uint256 endTime,
-        address hiredArtisan,
-        uint256 paymentId,
-        bool isCompleted,
-        bool isClosed
-    ) {
+    function getGigDetails(uint256 _gigId)
+        external
+        view
+        returns (
+            address client,
+            string memory title,
+            string memory description,
+            uint256 budget,
+            uint256 duration,
+            uint256 startTime,
+            uint256 endTime,
+            address hiredArtisan,
+            uint256 paymentId,
+            bool isCompleted,
+            bool isClosed
+        )
+    {
         require(_gigId < gigCounter, "Invalid gig ID");
         Gig storage gig = gigs[_gigId];
         isCompleted = isGigCompleted[_gigId];
